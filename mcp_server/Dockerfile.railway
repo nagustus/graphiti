@@ -1,6 +1,6 @@
 # Standalone Graphiti MCP Server — Railway build
-# Context root: mcp_server/
-# Connects to external FalkorDB (set GRAPH_DB_URI env var)
+# Railway uses repo root as build context; all COPY paths prefixed with mcp_server/
+# Connects to external FalkorDB via GRAPH_DB_URI env var
 
 FROM python:3.11-slim-bookworm
 
@@ -15,15 +15,15 @@ WORKDIR /app/mcp
 
 ARG GRAPHITI_CORE_VERSION=0.29.1
 
-COPY pyproject.toml uv.lock ./
+COPY mcp_server/pyproject.toml mcp_server/uv.lock ./
 
 RUN sed -i '/\[tool\.uv\.sources\]/,/graphiti-core/d' pyproject.toml &&     sed -i "s/graphiti-core\[falkordb\][>=]\+[0-9]\+\.[0-9]\+\.[0-9]\+/graphiti-core[neo4j,falkordb]==${GRAPHITI_CORE_VERSION}/" pyproject.toml &&     rm -f uv.lock &&     uv lock
 
 RUN uv sync --no-group dev --extra providers --extra azure
 
-COPY main.py ./
-COPY src/ ./src/
-COPY config/ ./config/
+COPY mcp_server/main.py ./
+COPY mcp_server/src/ ./src/
+COPY mcp_server/config/ ./config/
 
 RUN mkdir -p /var/log/graphiti
 
